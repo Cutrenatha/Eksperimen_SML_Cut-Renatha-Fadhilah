@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths:
       - "credit_scoring_raw.csv"
-      - "preprocessing/automate_Nama-siswa.py"
+      - "preprocessing/automate_Cut-Renatha-Fadhilah.py"
   workflow_dispatch:
 
 jobs:
@@ -34,7 +34,7 @@ jobs:
       - name: Run preprocessing automation
         run: |
           cd preprocessing
-          python automate_Nama-siswa.py
+          python automate_Cut-Renatha-Fadhilah.py
 
       - name: Verify output
         run: |
