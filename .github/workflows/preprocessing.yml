@@ -1,0 +1,63 @@
+name: Preprocess Dataset
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "credit_scoring_raw.csv"
+      - "preprocessing/automate_Nama-siswa.py"
+  workflow_dispatch:
+
+jobs:
+  preprocess:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Run actions/checkout@v3
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.12.7
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12.7"
+
+      - name: Check Env
+        run: |
+          python --version
+          pip --version
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pandas==2.2.3 numpy==1.26.4 scikit-learn==1.5.2 joblib==1.4.2
+
+      - name: Run preprocessing automation
+        run: |
+          cd preprocessing
+          python automate_Nama-siswa.py
+
+      - name: Verify output
+        run: |
+          ls -lh preprocessing/credit_scoring_preprocessing/
+          head -3 preprocessing/credit_scoring_preprocessing/train.csv
+          head -3 preprocessing/credit_scoring_preprocessing/test.csv
+
+      - name: Upload preprocessed dataset
+        uses: actions/upload-artifact@v4
+        with:
+          name: preprocessed-dataset-${{ github.run_id }}
+          path: preprocessing/credit_scoring_preprocessing/
+          retention-days: 30
+
+      - name: Commit preprocessed data back to repo
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add preprocessing/credit_scoring_preprocessing/
+          git diff --cached --quiet || git commit -m "ci: update preprocessed dataset [skip ci]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Complete job
+        run: echo "Preprocessing workflow completed!"
